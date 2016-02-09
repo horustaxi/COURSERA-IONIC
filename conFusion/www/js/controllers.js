@@ -72,7 +72,7 @@ angular.module('conFusion.controllers', [])
   };    
 })
 
-.controller('MenuController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
+.controller('MenuController', ['$scope', 'dishes', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, dishes, favoriteFactory, baseURL, $ionicListDelegate) {
     
     $scope.baseURL = baseURL;
     $scope.tab = 1;
@@ -81,17 +81,7 @@ angular.module('conFusion.controllers', [])
     $scope.showMenu = false;
     $scope.message = "Loading ...";
     
-//menuFactory.query(
-    $scope.dishes = menuFactory.query(
-        function(response) {
-        $scope.dishes = response;
-        $scope.showMenu = true;
-        },
-        function(response) {
-            $scope.message = "Error: " + response.status + " " + response.statusText;
-        }
-    );
-
+    $scope.dishes = dishes;
 
     $scope.select = function(setTab) {
         $scope.tab = setTab;
@@ -159,13 +149,13 @@ angular.module('conFusion.controllers', [])
     };
 }])
 
-.controller('DishDetailController', ['$scope', '$stateParams', 'dish', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicPopover', '$ionicModal', function($scope, $stateParams, dish, menuFactory, favoriteFactory, baseURL, $ionicPopover, $ionicModal) {
+.controller('DishDetailController', ['$scope', '$stateParams', 'dish', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicPopover', '$ionicModal', '$localStorage', function($scope, $stateParams, dish, menuFactory, favoriteFactory, baseURL, $ionicPopover, $ionicModal, $localStorage) {
     
     $scope.baseURL = baseURL;
     $scope.dish = {};
     $scope.showDish = false;
     $scope.message="Loading ...";
-
+                                     
     $scope.dish = dish;
     
     $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
@@ -181,9 +171,9 @@ angular.module('conFusion.controllers', [])
     $scope.closePopover = function() {
         $scope.popover.hide();
     };
-                                     
-                                     
+                                         
     $scope.addFavorite = function () {
+        $localStorage.storeObject('localFavorites',$scope.dish.id);
         favoriteFactory.addToFavorites($scope.dish.id);  
         $scope.closePopover();
     }
@@ -251,14 +241,14 @@ angular.module('conFusion.controllers', [])
 }])
 
 // implement the IndexController and About Controller here
-
-.controller('IndexController', ['$scope', 'menuFactory', 'promotionFactory', 'corporateFactory', 'baseURL', function($scope, menuFactory, promotionFactory, corporateFactory, baseURL) {
+.controller('IndexController', ['$scope', 'dish', 'promotion', 'leader', 'baseURL', function($scope, dish, promotion, leader, baseURL) {
 
     $scope.baseURL = baseURL;
-    $scope.leader = corporateFactory.get({id:3});
+    $scope.leader = leader;
     $scope.showDish = false;
     $scope.message="Loading ...";
-    $scope.dish = menuFactory.get({id:0})
+    
+    $scope.dish = dish
     .$promise.then(
         function(response){
             $scope.dish = response;
@@ -268,13 +258,14 @@ angular.module('conFusion.controllers', [])
             $scope.message = "Error: "+response.status + " " + response.statusText;
         }
     );
-    $scope.promotion = promotionFactory.get({id:0});
+    
+    $scope.promotion = promotion;
 }])
 
-.controller('AboutController', ['$scope', 'corporateFactory', 'baseURL', function($scope, corporateFactory, baseURL) {
+.controller('AboutController', ['$scope', 'leadership', 'baseURL', function($scope, leadership, baseURL) {
 
     $scope.baseURL = baseURL;
-    $scope.leaders = corporateFactory.query();
+    $scope.leaders = leadership;
     console.log($scope.leaders);
 
 }])
